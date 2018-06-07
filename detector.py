@@ -8,6 +8,7 @@ import homographier
 def detect(pano_frames, progress_bar=True):
     detected_frames = list()
     last_thresh = np.ones(pano_frames[0].img.shape[:2], dtype=np.uint8)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
 
     adjacent_5frames = zip(pano_frames, pano_frames[1:], pano_frames[2:], pano_frames[3:], pano_frames[4:])
     adjacent_5frames = tqdm(adjacent_5frames, total=len(pano_frames)-4) if progress_bar else adjacent_5frames
@@ -30,17 +31,16 @@ def detect(pano_frames, progress_bar=True):
         D2 = [cv2.threshold(D, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1] for D in D2]
 
         thresh = (D2[0] * D2[4]) + (D2[1] * D2[3])
-        thresh = cv2.dilate(thresh, None, iterations=20)
-        thresh = cv2.erode(thresh, None, iterations=10)
+        thresh = cv2.dilate(thresh, kernel, iterations=2)
+        thresh = cv2.erode(thresh, kernel, iterations=1)
 
         cnts = cv2.findContours(last_thresh * thresh * 255, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
         for cnt in cnts:
             if cv2.contourArea(cnt) < 50:
                 continue
             (x, y, w, h) = cv2.boundingRect(cnt)
-            if not np.all(np.array([x, y, x+w, y+h]) - (0, 0, image.shape[1], image.shape[0])):
-                continue
-            cv2.rectangle(image, (x, y), (x+w, y+h), (66, 66, 165), 2)
+            if np.all(np.array([x, y, x+w, y+h]) - (0, 0, image.shape[1], image.shape[0])):
+                cv2.rectangle(image, (x, y), (x+w, y+h), (66, 66, 165), 2)
 
         # cv2.imwrite('detect/detect{:05d}.jpg'.format(index + 2), image)
         detected_frames.append(homographier.PanoFrame(image=image))
