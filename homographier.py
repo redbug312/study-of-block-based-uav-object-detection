@@ -18,7 +18,7 @@ class Homographier:
         root.H = np.identity(3)
         self.pano_frames.append(root)
 
-    def find_homography_to_last(self, new_frame):
+    def find_homography_to_last(self, new_frame, mvs=None):
         ref_frame = self.pano_frames[-1]
         cur_frame = new_frame
 
