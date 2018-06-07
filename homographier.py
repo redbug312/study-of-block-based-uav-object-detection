@@ -33,8 +33,9 @@ class Homographier:
         np.set_printoptions(threshold=np.nan)
 
         unique_coordinates = lambda cs: cs[np.unique(np.dot(cs, [[1], [1j]]), return_index=True)[1]]
-        src_pts = np.multiply(np.transpose(np.where(beltrami > 1.005)), 1/16).astype('uint8')
-        src_pts = np.multiply(unique_coordinates(src_pts), 16)
+        # src_pts = np.multiply(np.transpose(np.where(beltrami > 1.005)), 1/16).astype('uint8')
+        src_pts = np.array(np.where(beltrami > 1.005), dtype=np.uint8).T // 16
+        src_pts = np.multiply(unique_coordinates(src_pts), 16) + 8
 
         candidates = np.lib.stride_tricks.as_strided(
             ref_frame.img,
@@ -42,17 +43,26 @@ class Homographier:
             strides=ref_frame.img.strides[:2]+ref_frame.img.strides
         )
 
-        def find_dst(image, block, candidates):
+        def find_dst(block):
+            # if mvs is not None:
+            #     mv = mvs[block[0]//16, block[1]//16]
+            #     if not np.isnan(mv[0]):
+            #         return mv + block
             y, x = block.tolist()
-            h, w = image.shape[:2]
-            SAD = lambda candidate: np.sum(cv2.absdiff(image[y:y+16, x:x+16], candidate).astype('int'))
+            h, w = cur_frame.img.shape[:2]
+            SAD = lambda candidate: np.sum(cv2.absdiff(cur_frame.img[y:y+16, x:x+16], candidate).astype(np.int))
             ranges = candidates[max(0,y-8):min(y+9,h), max(0,x-8):min(x+9,w)]
             errors = np.vectorize(SAD, signature='(16,16,3)->()')(ranges)
-            return np.array([max(0,y-8), max(0,x-8)]) + \
+            return np.array([max(0,y-8), max(0,x-8)]).astype(np.float) + \
                    np.unravel_index(errors.argmin(), errors.shape)
 
-        dst_pts = np.vectorize(lambda b: find_dst(cur_frame.img, b, candidates), signature='(2)->(2)')(src_pts)
+        dst_pts = np.full(src_pts.shape, np.nan) if mvs is None \
+                  else mvs[src_pts.T[0] // 16, src_pts.T[1] // 16] + src_pts
+        known_dst_pts = ~np.isnan(dst_pts)[:, 0]
+        if not np.all(known_dst_pts):
+            dst_pts[~known_dst_pts] = np.vectorize(find_dst, signature='(2)->(2)')(src_pts[~known_dst_pts])
         cur_frame.H = cv2.findHomography(dst_pts, src_pts, method=cv2.RANSAC)[0]
+        # print(cur_frame.H)
 
         self.pano_frames.append(cur_frame)
         return cur_frame
