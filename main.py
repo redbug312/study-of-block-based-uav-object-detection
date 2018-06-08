@@ -1,11 +1,16 @@
 import subprocess as sp
 from tqdm import tqdm
+from PIL import Image
 
 import homographier
 import detector
 import stitcher
 import parser
 
+
+frame_shape = (480, 640, 3)
+frame_count = 100
+frame_rate  = 25
 
 cmd = ['lib/FFmpeg-n4.0/ffmpeg',
        '-flags2', '+export_mvs',
@@ -18,9 +23,6 @@ cmd = ['lib/FFmpeg-n4.0/ffmpeg',
 
 out_params = {'stdout': sp.PIPE, 'stderr': sp.DEVNULL}
 err_params = {'stdout': sp.DEVNULL, 'stderr': sp.PIPE}
-
-frame_shape = (480, 640, 3)
-frame_count = 100
 
 with sp.Popen(cmd, **out_params) as out_proc, sp.Popen(cmd, **err_params) as err_proc,\
      tqdm(total=frame_count) as pbar:
@@ -56,7 +58,7 @@ cmd = ['lib/FFmpeg-n4.0/ffmpeg',
        '-vcodec', 'rawvideo',
        '-s', '{0[1]}x{0[0]}'.format(frame_shape),
        '-pix_fmt', 'rgb24',
-       '-r', '25',
+       '-r', str(frame_rate),
        '-i', '-', '-an',
        '-vcodec', 'libx264',
        '-crf', '20',
@@ -72,4 +74,4 @@ with sp.Popen(cmd, **save_params) as save_proc:
             print(str(err) + '\n' + save_proc.stderr.read().decode('utf-8'))
 
 # panorama = stitcher.stitch(homo.pano_frames)
-# cv2.imwrite('panorama.jpg', panorama)
+# Image.fromarray(panorama).save('panorama.jpg')
