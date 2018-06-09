@@ -24,23 +24,23 @@ def detect(pano_frames, progress_bar=True):
         dims = image.shape[:2][::-1]
 
         img = [cv2.warpPerspective(f.img, H, dims) for f, H in zip(frames, H2)]
-        img = [cv2.cvtColor(i, cv2.COLOR_BGR2GRAY) for i in img]
+        img = [cv2.cvtColor(i, cv2.COLOR_RGB2GRAY) for i in img]
         img = [cv2.medianBlur(i, 5) for i in img]
 
         D2 = [cv2.absdiff(i, img[2]) for i in img]
         D2 = [cv2.threshold(D, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1] for D in D2]
 
         thresh = (D2[0] * D2[4]) + (D2[1] * D2[3])
-        thresh = cv2.dilate(thresh, kernel, iterations=5)
-        thresh = cv2.erode(thresh, kernel, iterations=4)
+        thresh = cv2.dilate(thresh, kernel, iterations=3)
+        thresh = cv2.erode(thresh, kernel, iterations=2)
 
-        cnts = cv2.findContours(last_thresh * thresh * 255, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
+        cnts = cv2.findContours(thresh * last_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1]
         for cnt in cnts:
-            if cv2.contourArea(cnt) < 200:
+            if cv2.contourArea(cnt) <= np.sum(kernel):
                 continue
             (x, y, w, h) = cv2.boundingRect(cnt)
             if np.all(np.array([x, y, x+w, y+h]) - (0, 0, image.shape[1], image.shape[0])):
-                cv2.rectangle(image, (x, y), (x+w, y+h), (66, 66, 165), 2)
+                cv2.rectangle(image, (x, y), (x+w, y+h), (165, 66, 66), 2)
 
         # cv2.imwrite('detect/detect{:05d}.jpg'.format(index + 2), image)
         detected_frames.append(homographier.PanoFrame(image=image))

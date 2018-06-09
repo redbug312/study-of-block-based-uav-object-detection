@@ -19,7 +19,7 @@ def read_frame_with_mvs(fd_frame, fd_mvs, frame_shape):
     mvs_dump = b''
     while True:
         stderr = fd_mvs.readline()
-        if stderr[:9] != b'NEWFRAME;' and stderr != b'END;\n':
+        if stderr[:9] != b'NEWFRAME;':
             mvs_dump = mvs_dump + stderr
         else:
             break

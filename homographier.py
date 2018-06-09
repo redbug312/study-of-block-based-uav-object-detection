@@ -25,9 +25,9 @@ class Homographier:
 
         Ix = np.gradient(cur_frame.img / 255, axis=1)
         Iy = np.gradient(cur_frame.img / 255, axis=0)
-        Ixx = cv2.GaussianBlur(np.sum(np.multiply(Ix, Ix), axis=2), (5, 5), 0)
-        Ixy = cv2.GaussianBlur(np.sum(np.multiply(Ix, Iy), axis=2), (5, 5), 0)
-        Iyy = cv2.GaussianBlur(np.sum(np.multiply(Iy, Iy), axis=2), (5, 5), 0)
+        Ixx = np.sum(np.multiply(Ix, Ix), axis=2)
+        Ixy = np.sum(np.multiply(Ix, Iy), axis=2)
+        Iyy = np.sum(np.multiply(Iy, Iy), axis=2)
 
         # beltrami = lambda st: 1 + np.linalg.det(st) + np.trace(st)
         beltrami = 1 + np.multiply(Ixx, Iyy) - np.multiply(Ixy, Ixy) + Ixx + Iyy
@@ -63,6 +63,7 @@ class Homographier:
         if not np.all(known_dst_mvs):
             dst_mvs[~known_dst_mvs] = np.vectorize(find_mv, signature='(2)->(2)')(src_pts[~known_dst_mvs] - 8)
 
+        cur_frame.H = cv2.findHomography(src_pts + dst_mvs, src_pts, method=cv2.RANSAC)[0]
         self.pano_frames.append(cur_frame)
         return cur_frame
 

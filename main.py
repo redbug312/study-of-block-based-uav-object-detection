@@ -10,13 +10,13 @@ import parser
 
 frame_shape = (480, 640, 3)
 frame_count = 100
-frame_rate  = 25
+frame_rate  = 30
 
 cmd = ['lib/FFmpeg-n4.0/ffmpeg',
        '-flags2', '+export_mvs',
        '-threads', '1',
        '-nostats',
-       '-i', '/tmp/a1.mp4',
+       '-i', 'dataset/egtest01_short.mp4',
        '-f', 'image2pipe',
        '-pix_fmt', 'rgb24',
        '-vcodec', 'rawvideo', '-']
