@@ -63,7 +63,7 @@ class Homographier:
         if not np.all(known_dst_mvs):
             dst_mvs[~known_dst_mvs] = np.vectorize(find_mv, signature='(2)->(2)')(src_pts[~known_dst_mvs] - 8)
 
-        cur_frame.H = cv2.findHomography(src_pts + dst_mvs, src_pts, method=cv2.RANSAC)[0]
+        cur_frame.H = cv2.findHomography(src_pts, src_pts + dst_mvs, method=cv2.RANSAC)[0]
         self.pano_frames.append(cur_frame)
         return cur_frame
 

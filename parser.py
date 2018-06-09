@@ -19,7 +19,7 @@ def read_frame_with_mvs(fd_frame, fd_mvs, frame_shape):
     mvs_dump = b''
     while True:
         stderr = fd_mvs.readline()
-        if stderr[:9] != b'NEWFRAME;':
+        if stderr[:9] != b'ENDFRAME;':
             mvs_dump = mvs_dump + stderr
         else:
             break
@@ -33,6 +33,12 @@ def parse_mvs_dump(mvs_dump):
     mvs_dump = iter(mvs_dump.split('\n'))
     filter_letters = str.maketrans('', '', string.ascii_letters + '=')
     parse_digits = lambda l: l.translate(filter_letters).split(';')
+
+    try:
+        line = next(mvs_dump)
+        assert(line[:9] == 'NEWFRAME;')
+    except (StopIteration, AssertionError) as err:
+        return
 
     while True:
         try:
