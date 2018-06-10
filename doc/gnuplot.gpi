@@ -1,0 +1,14 @@
+#!/usr/bin/env gnuplot
+set title 'PSNR of Warped Current Frame with Previous Ones' tc rgb '#222222'
+set xlabel 'Frames' tc rgb '#222222'
+set ylabel 'PSNR (dB)' tc rgb '#222222'
+set key tc rgb '#222222'
+set border lc rgb '#222222'
+
+set terminal png font 'Ubuntu' transparent truecolor size 880, 490
+set output 'doc/plot.png'
+
+plot \
+'doc/log/animals_short_set1.log' using 1 smooth csplines with lines title 'SIFT+FLANN', \
+'doc/log/animals_short_set2.log' using 1 smooth csplines with lines title 'Block-based', \
+'doc/log/animals_short_set3.log' using 1 smooth csplines with lines title 'Block-based with ffmpeg', \
