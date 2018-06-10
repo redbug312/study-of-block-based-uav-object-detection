@@ -5,7 +5,7 @@ import numpy as np
 def digest_debug_info_before_mvs(fd_mvs):
     while True:
         stderr = fd_mvs.readline()
-        if stderr == b'NEWFRAME;num=0\n':
+        if stderr == b'Press [q] to stop, [?] for help\n':
             break
 
 
@@ -39,6 +39,8 @@ def parse_mvs_dump(mvs_dump):
         assert(line[:9] == 'NEWFRAME;')
     except (StopIteration, AssertionError) as err:
         return
+    else:
+        scale = 2 ** int(parse_digits(line)[2])
 
     while True:
         try:
@@ -56,18 +58,17 @@ def parse_mvs_dump(mvs_dump):
             break
         else:
             direction, mv_count = map(int, parse_digits(line)[1:3])
-            if direction == 0:
-                mvs[mby, mbx] = [0, 0]
+            if direction == 1:
+                continue
+            mvs[mby, mbx] = [0, 0]
 
-        for i in range(int(mv_count)):
+        for i in range(mv_count):
             try:
                 line = next(mvs_dump)
                 assert(line[:7] == 'VECTOR;')
             except (StopIteration, AssertionError):
                 break
             else:
-                if direction == 1:
-                    continue
                 mx, my = map(float, parse_digits(line)[3:5])
-                mvs[mby, mbx] += np.divide([my, mx], mv_count * 4)
+                mvs[mby, mbx] += np.divide([my, mx], mv_count * scale)
     return mvs
