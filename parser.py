@@ -58,9 +58,8 @@ def parse_mvs_dump(mvs_dump):
             break
         else:
             direction, mv_count = map(int, parse_digits(line)[1:3])
-            if direction == 1:
-                continue
-            mvs[mby, mbx] = [0, 0]
+            if direction == 0:
+                mvs[mby, mbx] = [0, 0]
 
         for i in range(mv_count):
             try:
@@ -69,6 +68,7 @@ def parse_mvs_dump(mvs_dump):
             except (StopIteration, AssertionError):
                 break
             else:
-                mx, my = map(float, parse_digits(line)[3:5])
-                mvs[mby, mbx] += np.divide([my, mx], mv_count * scale)
+                if direction == 0:
+                    vector = parse_digits(line)[3:5]
+                    mvs[mby, mbx] += np.divide(vector, mv_count * scale)
     return mvs
