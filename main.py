@@ -10,14 +10,14 @@ import parser
 
 
 frame_shape = (480, 640, 3)
-frame_count = 100
-frame_rate  = 30
+frame_count = 1000
+frame_rate  = 25
 
 input_cmd = ['lib/FFmpeg-n4.0/ffmpeg',
              '-flags2', '+export_mvs',
              '-threads', '1',
              '-nostats',
-             '-i', 'dataset/egtest01_short.mp4',
+             '-i', 'dataset/animals_short.mp4',
              '-f', 'image2pipe',
              '-pix_fmt', 'rgb24',
              '-vcodec', 'rawvideo', '-']
@@ -31,15 +31,16 @@ output_cmd = ['lib/FFmpeg-n4.0/ffmpeg',
               '-r', str(frame_rate),
               '-i', '-', '-an',
               '-vcodec', 'libx264',
-              '-crf', '20',
-              'detect.mp4']
+              '-crf', '20']
+
+output_cmd_to = lambda i: output_cmd + ['output/detect-{}.mp4'.format(i)]
 
 out_params  = {'stdout': sp.PIPE, 'stderr': sp.DEVNULL}
 err_params  = {'stdout': sp.DEVNULL, 'stderr': sp.PIPE}
 save_params = {'stdout': sp.DEVNULL, 'stderr': sp.PIPE, 'stdin': sp.PIPE}
 
 with sp.Popen(input_cmd, **out_params) as out_proc, sp.Popen(input_cmd, **err_params) as err_proc,\
-     sp.Popen(output_cmd, **save_params) as save_proc, tqdm(total=frame_count) as pbar:
+     sp.Popen(output_cmd_to(0), **save_params) as save_proc, tqdm(total=frame_count) as pbar:
     # Unloop first iteration for root frame
     try:
         parser.digest_debug_info_before_mvs(err_proc.stderr)
@@ -54,6 +55,11 @@ with sp.Popen(input_cmd, **out_params) as out_proc, sp.Popen(input_cmd, **err_pa
     last_thresh = np.ones(root_frame.img.shape[:2], dtype=np.uint8)
 
     while True:
+        if pbar.n % 1000 == 0:
+            # Hot plugged: dangerous but easier to read
+            save_proc.__exit__(None, None, None)
+            save_proc = sp.Popen(output_cmd_to(pbar.n // 1000), **save_params)
+
         image, mvs = parser.read_frame_with_mvs(out_proc.stdout, err_proc.stderr, frame_shape)
         if image is None:
             break

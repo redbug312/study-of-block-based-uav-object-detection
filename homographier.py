@@ -13,14 +13,13 @@ class PanoFrame(pano.PanoImage):
 class Homographier:
 
     def __init__(self, root_frame):
-        root = PanoFrame(image=root_frame.img)
-        root.H = np.identity(3)
-        self.pano_frames = [root]
-        self.frame_shape = np.asarray(root.img.shape)
+        root_frame.H = np.identity(3)
+        self.last_frame = root_frame
+        self.frame_shape = np.asarray(root_frame.img.shape)
         self.block_shape = np.asarray(self.frame_shape[:2]) // 16
 
     def find_homography_to_last(self, new_frame, mvs=None):
-        ref_frame = self.pano_frames[-1]
+        ref_frame = self.last_frame
         cur_frame = new_frame
 
         Ix = np.gradient(cur_frame.img / 255, axis=1)
@@ -33,7 +32,7 @@ class Homographier:
         beltrami = 1 + np.multiply(Ixx, Iyy) - np.multiply(Ixy, Ixy) + Ixx + Iyy
 
         unique_coordinates = lambda cs: cs[np.unique(np.dot(cs, [[1], [1j]]), return_index=True)[1]]
-        src_mbs = unique_coordinates(np.column_stack(np.where(beltrami > 1.005)) // 16)
+        src_mbs = unique_coordinates(np.column_stack(np.where(beltrami > 1.01)) // 16)
         at_margin = np.any(src_mbs == [0, 0], axis=1) + np.any(src_mbs == self.block_shape - 1, axis=1)
         src_mbs = src_mbs[~at_margin]
 
@@ -64,7 +63,8 @@ class Homographier:
             dst_mvs[~known_dst_mvs] = np.vectorize(find_mv, signature='(2)->(2)')(src_pts[~known_dst_mvs] - 8)
 
         cur_frame.H = cv2.findHomography(src_pts, src_pts + dst_mvs, method=cv2.RANSAC)[0]
-        self.pano_frames.append(cur_frame)
+        self.last_frame = cur_frame
+
         return cur_frame
 
     def find_all_homography(self, frames):

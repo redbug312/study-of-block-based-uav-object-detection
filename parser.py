@@ -69,6 +69,6 @@ def parse_mvs_dump(mvs_dump):
                 break
             else:
                 if direction == 0:
-                    vector = parse_digits(line)[3:5]
+                    vector = np.asarray(parse_digits(line)[3:5], dtype=np.float)
                     mvs[mby, mbx] += np.divide(vector, mv_count * scale)
     return mvs
