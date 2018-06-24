@@ -27,7 +27,8 @@ Thid is demo part of team 14 presentation, in the course Video Communications (N
     $ xdg-open output.mp4
     ```
 
-The program will take `dataset/animals.mp4` and `output.mp4` as its input and output respectively. To change the input source video, you have to change the `input_video` variable in `main.py`.
+The program will take `dataset/animals_short.mp4` and `output.mp4` as its input and output respectively.
+To change the input source video, you have to change the `input_video` variable in `main.py`.
 
 ## Structure
 

@@ -10,9 +10,9 @@ import parser
 
 # TODO: Parse the media info from `$ mediainfo <filepath>`
 input_video = {
-    'filepath': 'dataset/animals.mp4',
+    'filepath': 'dataset/animals_short.mp4',
     'frame_shape': (480, 640, 3),
-    'frame_count': 16958,
+    'frame_count': 1000,
     'frame_rate': 29.970,
 }
 
@@ -43,7 +43,7 @@ err_params  = {'stdout': sp.DEVNULL, 'stderr': sp.PIPE}
 save_params = {'stdout': sp.DEVNULL, 'stderr': sp.PIPE, 'stdin': sp.PIPE}
 
 with sp.Popen(input_cmd, **out_params) as out_proc, sp.Popen(input_cmd, **err_params) as err_proc,\
-     sp.Popen(output_cmd_to(0), **save_params) as save_proc, tqdm(total=input_video['frame_count']) as pbar:
+     sp.Popen(output_cmd_to(0), **save_params) as save_proc, tqdm(total=input_video['frame_count'] - 4) as pbar:
     # Unloop first iteration for root frame
     try:
         parser.digest_debug_info_before_mvs(err_proc.stderr)

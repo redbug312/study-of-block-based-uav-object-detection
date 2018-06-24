@@ -1,6 +1,8 @@
 lib/FFmpeg-n4.0
+dataset/animals.mp4
 doc/plot.png
 output/
+output.mp4
 
 __pycache__/
 tags
