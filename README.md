@@ -11,18 +11,18 @@ Thid is demo part of team 14 presentation, in the course Video Communications (N
     $ git clone -b n4.0 https://github.com/FFmpeg/FFmpeg.git lib/FFmpeg-n4.0
     $ patch -p0 < lib/ffmpeg-patch
     ```
-2. Build FFmpeg with dependent package `libx264-dev`
+2. Build FFmpeg with dependent packages
     ```bash
-    $ sudo apt install libx264-dev
-    $ cd lib/FFmpeg
+    $ sudo apt install yasm libx264-dev
+    $ cd lib/FFmpeg-n4.0
     $ ./configure --prefix=`pwd` --enable-gpl --enable-libx264
     $ make
-    $ make install
     $ cd -
     ```
 3. Run the program, open the output video
     ```bash
-    $ pip3 install numpy opencv-python tqdm
+    $ sudo apt install python3-pip
+    $ pip3 install numpy opencv-python opencv-contrib-python tqdm
     $ make start
     $ xdg-open output.mp4
     ```
