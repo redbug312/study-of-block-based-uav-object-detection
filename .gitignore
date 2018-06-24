@@ -1,5 +1,6 @@
 lib/FFmpeg-n4.0
+doc/plot.png
+output/
 
 __pycache__/
-doc/plot.png
 tags

@@ -1,0 +1,80 @@
+--- lib/FFmpeg-n4.0/libavcodec/mpegutils.c
++++ lib/FFmpeg-n4.0/libavcodec/mpegutils.c
+@@ -119,13 +119,20 @@
+         if (!mvs)
+             return;
+ 
++        fprintf(stderr, "NEWFRAME;num=%d;scale=%d\n", avctx->frame_number, scale);
++
+         for (mb_y = 0; mb_y < mb_height; mb_y++) {
+             for (mb_x = 0; mb_x < mb_width; mb_x++) {
+                 int i, direction, mb_type = mbtype_table[mb_x + mb_y * mb_stride];
+                 for (direction = 0; direction < 2; direction++) {
+                     if (!USES_LIST(mb_type, direction))
+                         continue;
++
++                    fprintf(stderr, "MACROBLOCK;x=%d;y=%d\n", mb_x, mb_y);
++                    fprintf(stderr, "VECTORBLOCK;direction=%d;size=", direction);
++
+                     if (IS_8X8(mb_type)) {
++                        fprintf(stderr, "4;type=8x8\n");
+                         for (i = 0; i < 4; i++) {
+                             int sx = mb_x * 16 + 4 + 8 * (i & 1);
+                             int sy = mb_y * 16 + 4 + 8 * (i >> 1);
+@@ -134,8 +141,10 @@
+                             int mx = motion_val[direction][xy][0];
+                             int my = motion_val[direction][xy][1];
+                             mbcount += add_mb(mvs + mbcount, mb_type, sx, sy, mx, my, scale, direction);
++                            fprintf(stderr, "VECTOR;sx=%d;sy=%d;mx=%d;my=%d\n", sx, sy, mx, my);
+                         }
+                     } else if (IS_16X8(mb_type)) {
++                        fprintf(stderr, "2;type=16x8\n");
+                         for (i = 0; i < 2; i++) {
+                             int sx = mb_x * 16 + 8;
+                             int sy = mb_y * 16 + 4 + 8 * i;
+@@ -147,8 +156,10 @@
+                                 my *= 2;
+ 
+                             mbcount += add_mb(mvs + mbcount, mb_type, sx, sy, mx, my, scale, direction);
++                            fprintf(stderr, "VECTOR;sx=%d;sy=%d;mx=%d;my=%d\n", sx, sy, mx, my);
+                         }
+                     } else if (IS_8X16(mb_type)) {
++                        fprintf(stderr, "2;type=8x16\n");
+                         for (i = 0; i < 2; i++) {
+                             int sx = mb_x * 16 + 4 + 8 * i;
+                             int sy = mb_y * 16 + 8;
+@@ -160,14 +171,17 @@
+                                 my *= 2;
+ 
+                             mbcount += add_mb(mvs + mbcount, mb_type, sx, sy, mx, my, scale, direction);
++                            fprintf(stderr, "VECTOR;sx=%d;sy=%d;mx=%d;my=%d\n", sx, sy, mx, my);
+                         }
+                     } else {
++                        fprintf(stderr, "1;type=16x16\n");
+                           int sx = mb_x * 16 + 8;
+                           int sy = mb_y * 16 + 8;
+                           int xy = (mb_x + mb_y * mv_stride) << mv_sample_log2;
+                           int mx = motion_val[direction][xy][0];
+                           int my = motion_val[direction][xy][1];
+                           mbcount += add_mb(mvs + mbcount, mb_type, sx, sy, mx, my, scale, direction);
++                          fprintf(stderr, "VECTOR;sx=%d;sy=%d;mx=%d;my=%d\n", sx, sy, mx, my);
+                     }
+                 }
+             }
+@@ -185,12 +199,15 @@
+             memcpy(sd->data, mvs, mbcount * sizeof(AVMotionVector));
+         }
+ 
++        fprintf(stderr, "ENDFRAME;\n");
+         av_freep(&mvs);
+     }
+ 
+     /* TODO: export all the following to make them accessible for users (and filters) */
+-    if (avctx->hwaccel || !mbtype_table)
++    if (avctx->hwaccel || !mbtype_table) {
++        fprintf(stderr, "#ff_print_debug_info2() exit early");
+         return;
++    }
+ 
+ 
+     if (avctx->debug & (FF_DEBUG_SKIP | FF_DEBUG_QP | FF_DEBUG_MB_TYPE)) {
