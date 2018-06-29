@@ -1,6 +1,6 @@
 # Study of Block-based UAV-Video Moving Object Detection
 
-Thid is demo part of team 14 presentation, in the course Video Communications (National Taiwan University, 2018 Spring).
+This is the demo part of team 14 presentation, in the course Video Communications (National Taiwan University, 2018 Spring).
 
 > [slides](https://slides.com/redbug312/video-communication-demo#/)
 
@@ -19,7 +19,7 @@ Thid is demo part of team 14 presentation, in the course Video Communications (N
     $ make
     $ cd -
     ```
-3. Run the program, open the output video
+3. Run the program, and open the output video
     ```bash
     $ sudo apt install python3-pip
     $ pip3 install numpy opencv-python opencv-contrib-python tqdm
@@ -28,7 +28,7 @@ Thid is demo part of team 14 presentation, in the course Video Communications (N
     ```
 
 The program will take `dataset/animals_short.mp4` and `output.mp4` as its input and output respectively.
-To change the input source video, you have to change the `input_video` variable in `main.py`.
+In order to change the input source video, you have to change the `input_video` variable in `main.py`.
 
 ## Structure
 
@@ -45,7 +45,7 @@ To change the input source video, you have to change the `input_video` variable 
 ```
 
 - `parser.py`: Parse frame and motion vector informations from `FFmpeg`. It's based on [python-mv](https://github.com/runeksvendsen/python-mv) with some alters for ffmpeg n4.0.
-- `homographier.py`: Implement algorithms for estimating homography in frames of UAV-video.
+- `homographier.py`: Implement algorithms for estimating homography in each frame from UAV-video.
 - `detector.py`: Use difference method to detect moving objects.
 
 ## Credits
